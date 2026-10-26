@@ -176,7 +176,7 @@ export class MeasurementStore {
       instrumentation:{dropped_events_this_process:this.dropped},
       definitions:{version:'1',identity:'github_login_hmac',tokenizer:'o200k_base',tokenizer_package:'gpt-tokenizer@4.0.0',shadow_sample_probability:.2,
         retention:'first_observed_in_retained_90_days_exact_KST_day',latency:'successful_handler_including_measurement_work_excluding_network'},
-      caveats:['shadow estimates compare the returned evidence documents, not a historical user session or billing','retention uses first observed activity within the retained 90 days; no cross-client identity matching for Discord','validation and service identities are excluded from people and retention; today is partial'] };
+      caveats:['shadow estimates compare the returned evidence documents, not a historical user session or billing','retention uses first observed activity within the retained 90 days; no cross-client identity matching','validation and service identities are excluded from people and retention; today is partial'] };
   }
   close() { this.db.close(); }
 }

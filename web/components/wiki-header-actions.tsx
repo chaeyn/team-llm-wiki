@@ -17,11 +17,11 @@ export function WikiHeaderActions({ variant }: WikiHeaderActionsProps) {
       <Link
         className={`wiki-guide-link${compact ? ' wiki-guide-link-compact' : ''}`}
         href="/docs/bot-guide"
-        aria-label="Bot 사용법"
-        title="Bot 사용법"
+        aria-label="Agent 사용법"
+        title="Agent 사용법"
       >
         <BookOpen size={16} aria-hidden="true" />
-        <span>Bot 사용법</span>
+        <span>Agent 사용법</span>
       </Link>
       <Link
         className={`wiki-guide-link wiki-insights-link${compact ? ' wiki-guide-link-compact' : ''}`}
