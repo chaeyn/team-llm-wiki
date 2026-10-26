@@ -12,6 +12,11 @@ import re
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parent.parent
+# Skip URLs and path/repository identifiers; a sentence-ending period is allowed.
+SERVER_MENTION = re.compile(
+    r"[A-Za-z][A-Za-z0-9+.-]*://[^\s<>`\"']+|"
+    r"(?<![\w./\\-])(team-llm-wiki)(?![\w/\\-]|\.\w)"
+)
 SKILLS = {"wiki-answer", "wiki-metrics", "wiki-change"}
 ALLOWED = {
     "plugin.json", "mcp.json", "README.md",
@@ -57,7 +62,8 @@ def validate(source, server_name, endpoint):
     base = endpoint.removesuffix("/mcp")
     for name, data in list(files.items()):
         if name.endswith(".md"):
-            files[name] = data.decode().replace("https://wiki.example.com", base).replace("team-llm-wiki", server_name).encode()
+            content = data.decode().replace("https://wiki.example.com", base)
+            files[name] = SERVER_MENTION.sub(lambda match: server_name if match[1] else match[0], content).encode()
     manifest["homepage"] = base + "/docs"
     presentation["websiteURL"] = base + "/docs"
     files["plugin.json"] = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode()
