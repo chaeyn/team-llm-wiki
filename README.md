@@ -153,7 +153,8 @@ Start `web` separately with `npm run dev`. For production-like local routing, se
 
 Root `test:ui` and `test:notion-ui` run Playwright smoke tests using synthetic
 fixtures. They require a Chromium installation. Python checks cover the Notion
-setup helper, optional bridge, and section patch helper. See [verification](docs/verification.md)
+setup helper, optional bridge, section patch helper, and plugin packaging
+(`python3 -m unittest discover -s scripts -v`). See [verification](docs/verification.md)
 for results and release-tree scans.
 
 ## Layout

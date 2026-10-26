@@ -23,6 +23,7 @@ Git 제외를 확인했다.
 | `python3 -m unittest discover -s deploy -p 'test_*.py'` | **2/2 통과** |
 | 동일 unittest, `-s deploy/examples/hermes-bridge` | **1/1 통과**, 외부 모델 호출 없는 mock 검사 |
 | 동일 unittest, `-s agent-skills/wiki-update/scripts` | **9/9 통과** |
+| `python3 -m unittest discover -s scripts -v` (또는 `cd scripts && python3 -m unittest discover -v`) | **3/3 통과**, 플러그인 링크·서버 이름·ZIP 회귀 검사 |
 | skill-creator `quick_validate.py` | wiki-reader / wiki-update **2/2 통과** |
 | `python3 scripts/package-plugin.py --output /tmp/team-llm-wiki-plugin.zip --server-name sample-wiki --endpoint https://docs.example.com/mcp` | 통과, 7파일 ZIP; 사용자 endpoint/name 반영 |
 | Compose·예제 YAML 파싱 | 4파일 통과 |
