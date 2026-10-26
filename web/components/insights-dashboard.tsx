@@ -32,7 +32,7 @@ const reasonLabels: Record<string, string> = {
 
 const caveatLabels: Record<string, string> = {
   'shadow estimates compare the returned evidence documents, not a historical user session or billing': '동일 evidence 문서의 전체 읽기와 새 payload를 비교한 shadow 추정치입니다. 과거 사용자 세션이나 결제액을 나타내지 않습니다.',
-  'retention uses first observed activity within the retained 90 days; no cross-client identity matching for Discord': '재방문은 보관된 90일 안에서 처음 관측한 활동일을 기준으로 합니다. Discord와 웹 계정을 연결하지 않습니다.',
+  'retention uses first observed activity within the retained 90 days; no cross-client identity matching': '재방문은 보관된 90일 안에서 처음 관측한 활동일을 기준으로 합니다. 서로 다른 클라이언트의 계정을 연결하지 않습니다.',
   'validation and service identities are excluded from people and retention; today is partial': '검증용·서비스 계정은 사용자 수와 재방문 집계에서 제외했습니다. 오늘 수치는 부분 집계입니다.',
 };
 
