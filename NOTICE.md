@@ -1,8 +1,8 @@
 # Provenance
 
-team-llm-wiki is derived from an internal team wiki server and its agent skills,
-generalized for independently hosted team installations. Private knowledge-base
-content, deployment credentials and original branding are not distributed.
+team-llm-wiki provides a generalized wiki server and agent skills for independently
+hosted team installations. No private knowledge-base content, credentials or
+branding are distributed.
 
 The historical entry-instruction measurements in
 `docs/upstream/WIKI_EFFICIENCY_VALIDATION.md` are upstream results, not a benchmark

@@ -2,7 +2,7 @@
 
 연결된 Wiki MCP와 Wiki Web을 잇는 플러그인입니다.
 
-팀원은 [설치·GitHub 인증·사용 안내](https://github.com/your-org/team-llm-wiki/blob/main/docs/team-setup.md)를 따라 자신의 계정에 등록할 수 있습니다.
+팀원은 [설치·GitHub 인증·사용 안내](https://github.com/chaeyn/team-llm-wiki/blob/main/docs/team-setup.md)를 따라 자신의 계정에 등록할 수 있습니다.
 
 ## 사용
 

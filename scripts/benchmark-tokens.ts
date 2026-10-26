@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import { countTokens } from "gpt-tokenizer/encoding/o200k_base";
+import { config } from "../src/config.js";
 import { hashContent, parseSections } from "../src/sections.js";
 import { WikiService, type Note, type ResolvedNote } from "../src/wiki.js";
 import { WikiVectorIndex } from "../src/vector.js";
@@ -8,9 +9,9 @@ const queries = ["WebRTC 연결", "JWT 인증", "GPU 운영", "CI/CD 배포", "�
 function option(name: string) { const index = process.argv.indexOf(name); return index < 0 ? undefined : process.argv[index + 1]; }
 function tokens(value: unknown, pretty = false) { return countTokens(typeof value === "string" ? value : JSON.stringify(value, null, pretty ? 2 : undefined)); }
 function legacyNote(note: ResolvedNote) { const { note_hash: _newHash, ...old } = note; return old; }
-function legacySearch(notes: Note[], query: string) {
+function legacySearch(notes: Note[], query: string, historyFolder: string) {
   const normalized = query.toLocaleLowerCase(); const terms = normalized.split(/\s+/).filter(Boolean);
-  return notes.filter((note) => !note.path.split("/").includes("사건기록")).map((note) => {
+  return notes.filter((note) => !note.path.split("/").includes(historyFolder)).map((note) => {
     const title = note.title.toLocaleLowerCase(); const question = String(note.metadata.question ?? "").toLocaleLowerCase();
     const body = note.body.toLocaleLowerCase(); const filePath = note.path.toLocaleLowerCase();
     let score = (title.includes(normalized) ? 12 : 0) + (question.includes(normalized) ? 10 : 0) + (filePath.includes(normalized) ? 8 : 0) + (body.includes(normalized) ? 4 : 0);
@@ -32,8 +33,9 @@ function aggregate(rows: Array<{ before_tokens: number; after_tokens: number }>)
 }
 
 const root = option("--root");
-if (!root) throw new Error("Usage: benchmark-tokens --root <corpus-directory> [--output <report.json>] [--commit <source-commit>] [--qdrant-url <url> --embedding-url <url>]");
-const wiki = new WikiService(root);
+if (!root) throw new Error("Usage: benchmark-tokens --root <corpus-directory> [--history-folder <name>] [--output <report.json>] [--commit <source-commit>] [--qdrant-url <url> --embedding-url <url>]");
+const historyFolder = option("--history-folder") ?? config.wiki.historyFolder;
+const wiki = new WikiService(root, { historyFolder });
 const qdrantUrl = option("--qdrant-url"); const embeddingUrl = option("--embedding-url");
 if (qdrantUrl && embeddingUrl) {
   // Read the existing published vector generation. This benchmark never rebuilds an index.
@@ -43,7 +45,7 @@ if (qdrantUrl && embeddingUrl) {
 const notes = await wiki.listNotes();
 const readRows = [];
 for (const [index, query] of queries.entries()) {
-  const search = legacySearch(notes, query);
+  const search = legacySearch(notes, query, historyFolder);
   const fullNotes = await Promise.all(search.slice(0, 3).map(async (hit) => legacyNote(await wiki.getNote(hit.path))));
   const beforeTokens = tokens(search, true) + fullNotes.reduce((sum, note) => sum + tokens(note, true), 0);
   const context = await wiki.getContext(query, { maxChars: 12_000, limit: 8 });
@@ -55,7 +57,7 @@ for (const [index, query] of queries.entries()) {
 
 // Paired source tests isolate format savings from ranking quality: same note and exact target section.
 const writeRows = [];
-for (const note of notes.filter((note) => !note.path.split("/").includes("사건기록")).sort((a, b) => b.content.length - a.content.length)) {
+for (const note of notes.filter((note) => !note.path.split("/").includes(historyFolder)).sort((a, b) => b.content.length - a.content.length)) {
   const sections = parseSections(note.content);
   const eligible = sections.filter((section) => section.level >= 2 && section.content.length >= 120);
   if (eligible.length < 3) continue;
