@@ -1,0 +1,18 @@
+[Unit]
+Description=Wiki inference through the Hermes ChatGPT OAuth bridge (optional LLM provider)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Set HERMES_AGENT_PATH in the EnvironmentFile to your local hermes-agent checkout.
+WorkingDirectory=%h/apps/wiki-inference
+EnvironmentFile=%h/apps/wiki-inference/.env
+ExecStart=%h/apps/wiki-inference/venv/bin/python %h/apps/wiki-inference/wiki_bridge.py
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

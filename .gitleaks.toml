@@ -1,0 +1,7 @@
+# Keep all default detectors; exclude only installed dependencies and build output.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Generated dependencies and build artifacts only"
+paths = ['''(^|/)node_modules/''', '''(^|/)dist/''', '''(^|/)\.next/''']

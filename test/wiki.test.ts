@@ -1,0 +1,45 @@
+import assert from "node:assert/strict";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import test from "node:test";
+import { WikiService } from "../src/wiki.js";
+
+test("searches current notes, filters array domains, and excludes incident history by default", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "wiki-wiki-"));
+  try {
+    await mkdir(path.join(root, "history"));
+    await writeFile(path.join(root, "current.md"), "---\ndomain:\n  - client\nowner: client-team\nverification: verified\n---\n# WebRTC 연결\n현재 연결 절차입니다.\n");
+    await writeFile(path.join(root, "history", "old.md"), "---\ndomain: client\n---\n# WebRTC 장애\n과거 장애입니다.\n");
+    const wiki = new WikiService(root);
+    const current = await wiki.search("WebRTC", { domain: "client" });
+    assert.equal(current.length, 1);
+    assert.equal(current[0].path, "current.md");
+    const includingHistory = await wiki.search("WebRTC", { domain: "client", includeHistory: true });
+    assert.equal(includingHistory.length, 2);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("resolves outgoing links and preserves ambiguous or missing references", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "wiki-wiki-"));
+  try {
+    await mkdir(path.join(root, "docs"));
+    await mkdir(path.join(root, "one"));
+    await mkdir(path.join(root, "two"));
+    await writeFile(path.join(root, "source.md"), "# Source\n[[docs/target]] [[Duplicate]] [[missing]]\n");
+    await writeFile(path.join(root, "docs", "target.md"), "# Target\n");
+    await writeFile(path.join(root, "one", "first.md"), "# Duplicate\n");
+    await writeFile(path.join(root, "two", "second.md"), "# Duplicate\n");
+
+    const note = await new WikiService(root).getNote("source.md");
+    assert.deepEqual(note.resolved_links, [
+      { link: "docs/target", status: "resolved", path: "docs/target.md" },
+      { link: "Duplicate", status: "ambiguous", candidates: ["one/first.md", "two/second.md"] },
+      { link: "missing", status: "unresolved" }
+    ]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

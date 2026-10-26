@@ -1,0 +1,69 @@
+services:
+  wiki-mcp:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      WIKI_ROOT: /wiki
+      WIKI_CONFIG: /app/wiki.config.yaml
+      HOST: 0.0.0.0
+      PORT: ${WIKI_PORT:-3100}
+      WIKI_WEB_URL: http://wiki-web:3000
+      QDRANT_URL: http://qdrant:6333
+      EMBEDDING_URL: http://embeddings:8090
+      EMBEDDING_CACHE_DIR: /cache/embeddings
+      WIKI_MEASUREMENT_PATH: /metrics/events.sqlite
+      WIKI_CHAT_PATH: /chat-data/history.sqlite
+      NOTION_INDEX_PATH: /cache/notion/index.json
+    ports:
+      - "127.0.0.1:${WIKI_PORT:-3100}:${WIKI_PORT:-3100}"
+    volumes:
+      - ${WIKI_HOST_PATH:?Set WIKI_HOST_PATH to the canonical wiki checkout}:/wiki:ro
+      # Mount your filled-in config. Copy wiki.config.example.yaml to wiki.config.yaml first.
+      - ./wiki.config.yaml:/app/wiki.config.yaml:ro
+      - embedding-cache:/cache
+      - measurement-data:/metrics
+      - chat-data:/chat-data
+    depends_on:
+      - qdrant
+      - embeddings
+      - wiki-web
+  wiki-web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    restart: unless-stopped
+    environment:
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      WIKI_API_URL: http://wiki-mcp:${WIKI_PORT:-3100}
+      NEXT_TELEMETRY_DISABLED: 1
+  qdrant:
+    image: qdrant/qdrant:v1.19.1
+    restart: unless-stopped
+    environment:
+      QDRANT__TELEMETRY_DISABLED: "true"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    mem_limit: 1g
+  embeddings:
+    build: ./deploy/embeddings
+    restart: unless-stopped
+    environment:
+      WIKI_CONFIG: /app/wiki.config.yaml
+    volumes:
+      - ./wiki.config.yaml:/app/wiki.config.yaml:ro
+      - embedding-models:/models
+    cpus: 2
+    mem_limit: 3g
+volumes:
+  qdrant-data:
+    name: ${QDRANT_VOLUME:-team-llm-wiki_qdrant-data}
+  embedding-models:
+    name: ${EMBEDDING_MODELS_VOLUME:-team-llm-wiki_embedding-models}
+  embedding-cache:
+    name: ${EMBEDDING_CACHE_VOLUME:-team-llm-wiki_embedding-cache}
+  measurement-data:
+    name: ${MEASUREMENT_VOLUME:-team-llm-wiki_measurement-data}
+  chat-data:
+    name: ${CHAT_VOLUME:-team-llm-wiki_chat-data}

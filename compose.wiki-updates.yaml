@@ -1,0 +1,12 @@
+# Enable via COMPOSE_FILE=compose.yaml:compose.wiki-updates.yaml in the server .env.
+# Mounts the GitHub App private key so the chat /update flow can open Draft PRs.
+services:
+  wiki-mcp:
+    environment:
+      WIKI_GITHUB_APP_PRIVATE_KEY_PATH: /run/secrets/wiki-bot.pem
+    secrets:
+      - source: wiki-bot-key
+        target: wiki-bot.pem
+secrets:
+  wiki-bot-key:
+    file: ${WIKI_GITHUB_APP_PRIVATE_KEY_HOST_PATH:?Set the wiki bot private key path}

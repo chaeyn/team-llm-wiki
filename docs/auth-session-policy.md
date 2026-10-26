@@ -1,0 +1,17 @@
+# 로그인 재검증 정책
+
+팀원이 GitHub로 로그인하면 서버가 조직 멤버십이 active이고 역할이 member 또는 admin인지 확인한다. OAuth MCP 연결은 그 확인 시점부터 14일을 재로그인 상한으로 사용한다. refresh를 여러 번 사용해도 최초 상한을 연장하지 않는다.
+
+Access Token은 최대 7일(604,800초)이다. 14일 상한까지 남은 시간이 7일보다 짧으면 access token도 그 상한에 만료된다. Refresh Token은 GitHub 로그인 검증 시점부터 14일(1,209,600초) 후 최초 상한에 만료되며, 상한 정보가 없는 이전 refresh token은 새 GitHub 로그인을 요구한다.
+
+브라우저 로그인 쿠키는 1시간이다. 서버는 OAuth refresh·authorization code를 브라우저 쿠키로 사용하는 요청을 거절한다. 이전 형식의 정상 쿠키는 남은 유효 시간이 1시간 이내일 때 유지한다.
+
+이 정책은 팀 탈퇴를 실시간으로 감지하지 않는다. 탈퇴 직전에 멤버십 확인을 통과한 MCP 연결은 최초 로그인 후 최대 14일, 브라우저 쿠키는 최대 1시간 동안 남을 수 있다. 상한 뒤의 GitHub 로그인에서 현재 멤버십을 다시 확인한다. OAuth 토큰을 보관하거나 조직 조회용 App 권한을 새로 요청하지 않는다.
+
+이 기한은 위키 서버가 GitHub 로그인 뒤 발급하는 OAuth 토큰에 적용한다. GitHub에서 발급한 토큰의 만료 정책을 변경하지 않는다. 이미 발급한 토큰은 서명된 만료 시점을 유지하고, 새 로그인이나 갱신부터 새 Access Token 기한을 적용한다. 기존 Refresh Token의 최초 상한도 유지한다.
+
+## audience와 API scope
+
+MCP audience는 `/mcp`이며 읽기 메서드·도구 allowlist와 `mcp:read`를 검사한다. 기존 scope 없는 MCP 토큰도 이 읽기 범위만 허용한다. 웹 API의 audience는 `/api`이다. GET/HEAD와 POST `/api/sections`에는 `api:read`, 나머지 API 변경 요청에는 `api:write`가 필요하다. scope가 없거나 부족하면 403이다. 두 resource의 토큰은 교차 사용할 수 없고 refresh로 resource·scope를 올릴 수 없다. OAuth authorize에서 해당 resource 밖의 scope는 `invalid_scope`로 거부한다.
+
+브라우저 세션은 API 접근을 허용하되 쓰기는 same-origin 검사를 유지한다. Bearer 헤더가 있으면 cookie 권한을 빌리지 않는다. 변경안 발행은 별도로 요청자 신원을 확인한다.

@@ -1,0 +1,23 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+.DS_Store
+**/.DS_Store
+
+# The canonical wiki is a separately managed checkout; add any local copies here.
+wiki.config.yaml
+/wiki/
+
+**/__pycache__/
+*.pyc
+web/.next/
+web/next-env.d.ts
+web/tsconfig.tsbuildinfo
+test-results/
+
+# Credentials and local run artifacts
+*.pem
+*.key
+*.log

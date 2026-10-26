@@ -1,0 +1,98 @@
+# team-llm-wiki configuration.
+#
+# Copy this file to wiki.config.yaml (or point WIKI_CONFIG at it) and edit the
+# values for your team. Every value below is optional; anything you omit falls
+# back to the neutral built-in default shown here.
+#
+# Secrets (OAuth client secret, session secret, GitHub App private key, LLM API
+# key, Notion token) NEVER go in this file. They stay in environment variables /
+# .env. See .env.example.
+
+branding:
+  orgName: "Acme"
+  wikiTitle: "Team Wiki"
+  description: "Search and read your team's documentation."
+  # Path (served under /docs) to a wordmark image. Leave null to render a text wordmark.
+  logo: null
+  botName: "Wiki Bot"
+
+# UI / answer language hint (BCP-47 code). Used by the web <html lang> attribute.
+locale: "en"
+
+server:
+  # Externally reachable base URL of the wiki server. Used for OAuth metadata,
+  # cookies, same-origin checks and PR back-links. Override with PUBLIC_BASE_URL.
+  publicBaseUrl: "https://wiki.example.com"
+  # Browser origins allowed to call the API. Override with ALLOWED_ORIGINS (comma separated).
+  allowedOrigins:
+    - "https://wiki.example.com"
+
+integrations:
+  serviceIdentity: "wiki-read-service"
+
+auth:
+  # "github" requires GitHub OAuth + org membership. "disabled" is for local dev only.
+  # Override at runtime with AUTH_MODE (github|disabled).
+  provider: "github"
+  github:
+    # Only active members/admins of this org may sign in. Override with GITHUB_ORG.
+    org: "your-org"
+
+wiki:
+  # Canonical Markdown wiki repository (owner/name). Override with WIKI_GITHUB_REPOSITORY.
+  repository: "your-org/your-wiki"
+  defaultBranch: "main"
+  # Optional single "current metrics" note. When set, the get_current_metrics MCP
+  # tool is registered and identifier queries prioritize this note. Leave unset to
+  # disable that tool entirely.
+  # metricsNote: "_metrics.md"
+  # Folder whose notes are treated as historical and excluded unless include_history is set.
+  historyFolder: "history"
+
+mcp:
+  # Name advertised by the MCP server. Cookie names (<name>_session), the Qdrant
+  # notion alias and the git patch lock file are derived from this.
+  serverName: "team-llm-wiki"
+
+updates:
+  enabled: true
+  # Chat command that turns a conversation into a Draft PR proposal.
+  command: "/update"
+  # Additional accepted spellings of the command.
+  commandAliases:
+    - "/업데이트"
+  githubApp:
+    # Slug of the GitHub App that opens Draft PRs. Override with WIKI_GITHUB_APP_SLUG.
+    slug: "your-wiki-bot"
+  # Issue number that proposal branches/PRs reference. Override with WIKI_TRACKING_ISSUE.
+  # trackingIssue: 1
+
+search:
+  embedding:
+    model: "intfloat/multilingual-e5-small"
+    revision: "614241f622f53c4eeff9890bdc4f31cfecc418b3"
+    dimensions: 384
+  vector:
+    provider: "qdrant"
+    # Qdrant base URL. Override with QDRANT_URL. Leave unset to disable vector search.
+    # url: "http://qdrant:6333"
+    collectionAlias: "team_llm_wiki"
+
+llm:
+  # "openai-compatible" POSTs {baseUrl}/chat/completions with Bearer LLM_API_KEY.
+  # "hermes-bridge" POSTs {baseUrl}/v1/wiki/answer (see deploy/examples/hermes-bridge).
+  # "disabled" makes the chat endpoint return 503.
+  provider: "openai-compatible"
+  # Override with LLM_BASE_URL. The API key comes from LLM_API_KEY (env only).
+  # baseUrl: "https://llm.example.com/v1"
+  # Model name sent to the provider. Override with LLM_MODEL.
+  # model: "your-model-name"
+  # The chat system prompt. Omit to use the neutral built-in default.
+  # systemPrompt: |
+  #   You are an assistant that helps this team search its wiki...
+
+sources:
+  notion:
+    enabled: false
+    # Root Notion page IDs to index. Override with NOTION_ROOT_PAGE_IDS. Token is NOTION_TOKEN (env only).
+    rootPageIds: []

@@ -1,0 +1,28 @@
+---
+name: wiki-update
+description: 팀 위키에 확인된 세션 사실을 반영하고 검증한 뒤 요청 범위에 맞춰 커밋과 PR까지 진행한다. 위키 문서화·업데이트 요청에 사용한다. 위키 검색·질문이나 코드 레포 수정에는 사용하지 않는다.
+license: MIT
+metadata:
+  version: 0.9.0
+  owner: <wiki-owner>
+  repo: <wiki-repo>
+  mcp-server: <mcp-server-name>
+---
+
+# Wiki Update
+
+위키 Markdown은 사람이 읽는 정본이고 MCP는 읽기·검색 창구다. 수정은 지정된 위키 Git checkout에서 한다. 기존 사실은 근거 문서로 대조하고, 세션에서 나온 사실·과거 사실·가설·할 일을 구분한다.
+
+설치 시 `<wiki-repo>`, `<mcp-server-name>`, `<wiki-owner>`는 팀 설정의 저장소·MCP 이름·담당자로 치환한다.
+
+## 진행
+
+1. 클론 경로를 모르면 한 번 묻는다. 원격과 Git 상태를 확인한다. 기존 변경을 보존하고 현재 폴더의 새 브랜치에서 요청 범위만 작업한다. 같은 클론의 동시 작업과 충돌할 위험, 보존할 무관한 미커밋 변경, 위험하거나 되돌리기 어려운 변경의 격리가 필요한 경우에만 별도 worktree를 사용한다. PR push 후 또는 작업 중단 시 이 작업에서 만든 worktree만 정리한다. 미커밋·미푸시 변경이 있으면 삭제하지 않고 보고한다. 변경이 없으면 `git worktree remove <path>` 후 `git worktree prune`을 실행한다. 사용자 승인 없이 `--force`를 사용하지 않는다.
+2. `get_wiki_status`와 로컬 HEAD를 비교한다. `get_context`로 관련 문단을 찾고, 필요한 부분만 `get_note_outline`·`read_sections`로 읽는다. [MCP 조회 절차](references/mcp-retrieval.md)
+3. 기존 `question`에 맞는 문서를 우선 갱신한다. 근거, 담당 `owner`, `verification`, 시점을 정리하고 요청 밖의 변경을 빼둔다. [내용·메타데이터 기준](references/metadata-and-dates.md)
+4. 선택한 섹션만 고친다. 전체 문서·섹션 hash를 검증하는 로컬 patch CLI를 우선 사용하고, 사람이 diff를 확인한다. [편집·검토 절차](references/edit-review.md)
+5. 문서 링크·개인정보·과거 시점·중복 수치와 Git diff를 확인한다. 검증이 끝나면 요청이 허용한 범위에서 커밋·push·PR을 진행하고, 머지하지 않는다. [Git·PR 절차](references/git-publish.md)
+
+## 멈춤 조건
+
+원격이 다른 위키이거나, 대상 브랜치가 분기했거나, 근거 충돌을 해결할 수 없으면 파일을 덮거나 사실을 추정하지 말고 상태와 필요한 정보만 보고한다. 사용자가 로컬 전용 등 범위를 제한하면 그 범위를 따른다.
